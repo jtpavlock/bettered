@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """Script to transcode flac to mp3 and create a torrent file.
 
