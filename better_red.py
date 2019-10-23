@@ -11,12 +11,12 @@ Example:
 
 """
 
-import os
 import argparse
-import subprocess
-import shlex
-from distutils.dir_util import copy_tree
 from configparser import ConfigParser
+from distutils.dir_util import copy_tree
+import os
+import shlex
+import subprocess
 
 from tinytag import TinyTag
 
@@ -26,6 +26,7 @@ def main():
     args = parse_args()
     config = ConfigParser()
     config.read(os.path.expanduser('~/.config/betterRED/config.ini'))
+    check_config(config)
 
     for mp3_bitrate in args.mp3_bitrate:
         mp3_dir = create_pathname(args.flac_dir, mp3_bitrate,
@@ -50,6 +51,20 @@ def parse_args():
     parser.add_argument('flac_dir', help='Path to flac folder')
 
     return parser.parse_args()
+
+
+def check_config(config: ConfigParser):
+    """Checks the configuration file for valid entries."""
+    output_dir = config.get('transcode', 'output_dir')
+    if not os.path.exists(output_dir):
+        raise NotADirectoryError(
+            f'The provided output directory {output_dir} does not exist')
+
+    torrent_file_dir = config.get('torrent', 'torrent_file_dir')
+    if not os.path.exists(torrent_file_dir):
+        raise NotADirectoryError(
+            f'The provided torrent file directory {torrent_file_dir} '
+            f'does not exist')
 
 
 def create_pathname(flac_dir: str, mp3_bitrate: str, parent_dir: str) -> str:
@@ -78,6 +93,7 @@ def create_pathname(flac_dir: str, mp3_bitrate: str, parent_dir: str) -> str:
     raise Exception(f'No flac files were found in {flac_dir}')
 
 
+# TODO: parallize with Popen
 def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
     """Transcode flac dir to mp3.
 
@@ -124,7 +140,7 @@ def make_torrent(input_dir: str, torrent_dir: str, announce_id: str):
 
     Args:
         input_dir: Directory of music files to create the torrent from.
-        torrent_dir: Name of torrent directory.
+        torrent_dir: Directory to store the torrent file.
         announce_id: User announce id to use when creating the torrent.
     """
 
