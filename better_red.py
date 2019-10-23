@@ -113,7 +113,7 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
     """
 
     if os.path.exists(mp3_dir):
-        raise Exception(f'Output directory {mp3_dir} already exists')
+        raise IsADirectoryError(f'Output directory {mp3_dir} already exists')
 
     copy_tree(flac_dir, mp3_dir)  # copy everything over
 
