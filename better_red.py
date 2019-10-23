@@ -4,7 +4,7 @@
 
 BetterRED autmoatically transcodes a given path of flac files to mp3 files
 based on desired quality (MP3 V0 or MP3 320). It will then create a
-corresponding torrent file.
+corresponding torrent file to be uploaded to redacted.
 
 Example:
     $ betterRED v0 320 "Abbey Road [FLAC]/"
@@ -43,7 +43,9 @@ def main():
 
 def parse_args():
     """Parses and returns commandline arguments."""
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=__doc__)
 
     parser.add_argument('mp3_bitrate', choices=['V0', '320'], nargs='+',
                         help='MP3 type to transcode to (default: MP3 320)')
