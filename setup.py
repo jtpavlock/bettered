@@ -7,6 +7,7 @@ setup(
     version='0.1',
     description='Automatic helper for redacted better.php',
     url='https://github.com/jtpavlock/betterRED',
-    packages=setuptools.find_packages(),
+    packages=[],
+    install_requires=['tinytag'],
     python_requires='>=3.6',
     )
