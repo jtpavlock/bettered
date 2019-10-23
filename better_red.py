@@ -9,8 +9,6 @@ corresponding torrent file to be uploaded to redacted.
 Example:
     $ betterRED v0 320 "Abbey Road [FLAC]/"
 
-Todo:
-    * Test uploading
 """
 
 import os
