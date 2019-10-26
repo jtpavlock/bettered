@@ -39,21 +39,25 @@ def main():
     check_config(config)
 
     for mp3_bitrate in args.mp3_bitrate:
-        mp3_dir = create_pathname(args.flac_dir, mp3_bitrate,
-                                  config.get('transcode', 'output_dir'))
+        try:
+            mp3_dir = create_pathname(args.flac_dir, mp3_bitrate,
+                                      config.get('transcode', 'output_dir'))
+        except FileNotFoundError as error:
+            LOGGER.error(error)
+            sys.exit(1)
 
         try:
             transcode(args.flac_dir, mp3_bitrate, mp3_dir)
         except IsADirectoryError as error:
             LOGGER.error(error)
-            sys.exit()
+            sys.exit(1)
 
         try:
             check_formatting(mp3_dir)
         except FormattingError as error:
             remove_tree(mp3_dir)
             LOGGER.error(error)
-            sys.exit()
+            sys.exit(1)
 
         torrent_file_name = os.path.join(
             config.get('torrent', 'torrent_file_dir'),
@@ -64,7 +68,7 @@ def main():
                          config.get('redacted', 'announce_id'))
         except FileExistsError as error:
             LOGGER.error(error)
-            sys.exit()
+            sys.exit(1)
 
 
 def parse_args():
@@ -107,8 +111,10 @@ def create_pathname(flac_dir: str, mp3_bitrate: str, parent_dir: str) -> str:
 
     Returns:
         The full pathname.
-    """
 
+    Raises:
+        FileNotFoundError: A flac file wasn't found in the given flac_dir.
+    """
     for root, __, files in os.walk(flac_dir):
         for file in files:
             if file.endswith('.flac'):
@@ -124,7 +130,7 @@ def create_pathname(flac_dir: str, mp3_bitrate: str, parent_dir: str) -> str:
                             f' [MP3 {mp3_bitrate}]')
                 return os.path.join(parent_dir, basename)
 
-    raise Exception(f'No flac files were found in {flac_dir}')
+    raise FileNotFoundError(f'No flac files were found in {flac_dir}')
 
 
 def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
@@ -144,7 +150,6 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
     Raises:
         IsADirectoryError: If mp3_dir already exists.
     """
-
     if os.path.exists(mp3_dir):
         raise IsADirectoryError(
             f'Output directory "{mp3_dir}" already exists.')
@@ -183,7 +188,7 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
                 os.remove(os.path.join(root, file))
 
 
-def check_formatting(mp3_dir: str) -> bool:
+def check_formatting(mp3_dir: str):
     """Check formatting of transcoded mp3s before uploading
 
     Makes sure the transcoded mp3s have the required tags and formatting
@@ -192,13 +197,9 @@ def check_formatting(mp3_dir: str) -> bool:
     Args:
         mp3_dir: Directory of transcoded mp3s to check
 
-    Returns:
-        True if mp3_dir passes checks and false if not.
-
     Raises:
         FormattingError: If formatting rule not followed.
     """
-
     for root, _, files in os.walk(mp3_dir):
         for file in files:
             # check path length (<= 180)
