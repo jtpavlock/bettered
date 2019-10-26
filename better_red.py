@@ -120,6 +120,7 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
     transcode_opts = '-aq 0' if mp3_bitrate == 'V0' else '-ab 320k'
 
     # transcode all flac files
+    print(f'Transcoding {flac_dir}...')
     processes = []
     for root, _, files in os.walk(mp3_dir):
         for file in files:
@@ -128,8 +129,8 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
                 mp3_file = flac_file.replace('.flac', '.mp3')
 
                 # use ffmpeg to transcode
-                transcode_cmd = (f'ffmpeg -i "{flac_file}" {transcode_opts}'
-                                 f' "{mp3_file}"')
+                transcode_cmd = (f'ffmpeg -loglevel error -i "{flac_file}" '
+                                 f'{transcode_opts} "{mp3_file}"')
 
                 # run transocding commands in parallel
                 # stdin redirect required to reset terminal
