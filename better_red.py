@@ -21,6 +21,7 @@ import subprocess
 from tinytag import TinyTag
 
 
+# TODO: check for required redacted formatting
 def main():
     """Run that shit."""
     args = parse_args()
@@ -93,7 +94,6 @@ def create_pathname(flac_dir: str, mp3_bitrate: str, parent_dir: str) -> str:
     raise Exception(f'No flac files were found in {flac_dir}')
 
 
-# TODO: parallize with Popen
 def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
     """Transcode flac dir to mp3.
 
@@ -120,7 +120,8 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
     transcode_opts = '-aq 0' if mp3_bitrate == 'V0' else '-ab 320k'
 
     # transcode all flac files
-    for root, __, files in os.walk(mp3_dir):
+    processes = []
+    for root, _, files in os.walk(mp3_dir):
         for file in files:
             if file.endswith('.flac'):
                 flac_file = os.path.join(root, file)
@@ -130,9 +131,19 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
                 transcode_cmd = (f'ffmpeg -i "{flac_file}" {transcode_opts}'
                                  f' "{mp3_file}"')
 
-                subprocess.run(shlex.split(transcode_cmd), check=True)
+                # run transocding commands in parallel
+                processes.append(
+                    subprocess.Popen(shlex.split(transcode_cmd)))
 
-                os.remove(flac_file)
+    # wait for transcodes to finish
+    for process in processes:
+        process.wait()
+
+    # remove flac files from new mp3 directory
+    for root, _, files in os.walk(mp3_dir):
+        for file in files:
+            if file.endswith('.flac'):
+                os.remove(os.path.join(root, file))
 
 
 def make_torrent(input_dir: str, torrent_dir: str, announce_id: str):
