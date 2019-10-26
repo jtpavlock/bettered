@@ -73,6 +73,8 @@ def main():
 
 def parse_args():
     """Parses and returns commandline arguments."""
+    LOGGER.debug('Parsing commandline arguments: %s', sys.argv)
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=__doc__)
@@ -86,6 +88,8 @@ def parse_args():
 
 def check_config(config: ConfigParser):
     """Checks the configuration file for valid entries."""
+    LOGGER.debug('Checking config file')
+
     output_dir = config.get('transcode', 'output_dir')
     if not os.path.exists(output_dir):
         raise NotADirectoryError(
@@ -115,6 +119,8 @@ def create_pathname(flac_dir: str, mp3_bitrate: str, parent_dir: str) -> str:
     Raises:
         FileNotFoundError: A flac file wasn't found in the given flac_dir.
     """
+    LOGGER.debug('Generating the output directory name')
+
     for root, __, files in os.walk(flac_dir):
         for file in files:
             if file.endswith('.flac'):
@@ -128,6 +134,7 @@ def create_pathname(flac_dir: str, mp3_bitrate: str, parent_dir: str) -> str:
 
                 basename = (f'{albumartist} - {tags.album} ({tags.year})'
                             f' [MP3 {mp3_bitrate}]')
+                LOGGER.debug('Generated output directory name: %s', basename)
                 return os.path.join(parent_dir, basename)
 
     raise FileNotFoundError(f'No flac files were found in {flac_dir}')
@@ -241,12 +248,12 @@ def make_torrent(input_dir: str, torrent_file_name: str, announce_id: str):
 
     if os.path.exists(torrent_file_name):
         raise FileExistsError(
-            f'Torrent file"{torrent_file_name}" already exists.')
+            f'Torrent file "{torrent_file_name}" already exists.')
 
     announce_url = f'https://flacsfor.me/{announce_id}/announce'
 
     torrent_cmd = (f'mktorrent -l 17 -p -s RED -a {announce_url} "{input_dir}"'
-                   f' -o "{torrent_file_name}.torrent"')
+                   f' -o "{torrent_file_name}"')
 
     subprocess.run(shlex.split(torrent_cmd), check=True,
                    stdout=open(os.devnull))
