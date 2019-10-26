@@ -44,3 +44,8 @@ Edit the configuration file.
 
 ### 5. Run
 `betterRED/better_red.py -h`
+
+## Roadmap
+  * Automatic recognition of flac folders that can be modified to mp3s and uploaded
+  * Automatic uploading to redacted
+  * 2FA support
