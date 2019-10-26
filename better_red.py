@@ -132,8 +132,10 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
                                  f' "{mp3_file}"')
 
                 # run transocding commands in parallel
+                # stdin redirect required to reset terminal
                 processes.append(
-                    subprocess.Popen(shlex.split(transcode_cmd)))
+                    subprocess.Popen(shlex.split(transcode_cmd),
+                                     stdin=open(os.devnull)))
 
     # wait for transcodes to finish
     for process in processes:
