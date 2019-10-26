@@ -27,6 +27,7 @@ LOGGER = logging.getLogger(__name__)
 
 class FormattingError(Exception):
     """Used for checking mp3 formatting prior to uploading"""
+    """pylint test"""
 
 
 def main():
