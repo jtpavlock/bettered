@@ -65,6 +65,10 @@ def main():
         except IsADirectoryError as error:
             LOGGER.error(error)
             sys.exit(1)
+        except TranscodeError as error:
+            remove_tree(transcode_dir)
+            LOGGER.error(error)
+            sys.exit(1)
 
         try:
             check_formatting(transcode_dir)
