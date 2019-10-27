@@ -16,6 +16,7 @@ from configparser import ConfigParser
 from distutils.dir_util import copy_tree, remove_tree
 import logging
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -162,6 +163,10 @@ def create_album_path(flac_dir: str, bitrate: str, parent_dir: str) -> str:
 
                 basename = (f'{albumartist} - {tags["album"][0]} '
                             f'({year}) [{bitrate}]')
+
+                # remove illegal chars (: ? < > \ * | " // (Leading Space))
+                basename = re.sub('[:?<>\\*|"//]', ' ', basename)
+
                 LOGGER.debug('Generated album path: %s', basename)
 
                 return os.path.join(parent_dir, basename)
