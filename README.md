@@ -36,7 +36,7 @@ $ pip3 install .
 ### 4. Configure
 
 ~~~
-$ mkidr ~/.config/betterRED
+$ mkdir -p ~/.config/betterRED
 $ cp betterRED/example_config.ini ~/.config/betterRED/config.ini
 ~~~
 
