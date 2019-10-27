@@ -20,7 +20,8 @@ import shlex
 import subprocess
 import sys
 
-from tinytag import TinyTag
+from mutagen.mp3 import EasyMP3 as MP3
+from mutagen.flac import FLAC
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,35 +37,44 @@ def main():
     args = parse_args()
     config = ConfigParser()
     config.read(os.path.expanduser('~/.config/betterRED/config.ini'))
-    check_config(config)
 
-    for mp3_bitrate in args.mp3_bitrate:
+    try:
+        check_config(config)
+    except NotADirectoryError as error:
+        LOGGER.error(error)
+        sys.exit(1)
+
+    bitrate_arg_map = {'v0': 'MP3 V0', '320': 'MP3 320'}
+
+    for bitrate_arg in args.bitrates:
+        bitrate = bitrate_arg_map[bitrate_arg]
         try:
-            mp3_dir = create_pathname(args.flac_dir, mp3_bitrate,
-                                      config.get('transcode', 'output_dir'))
+            transcode_parent_dir = config.get('main', 'transcode_parent_dir')
+            transcode_dir = create_album_path(args.flac_dir, bitrate,
+                                              transcode_parent_dir)
         except FileNotFoundError as error:
             LOGGER.error(error)
             sys.exit(1)
 
         try:
-            transcode(args.flac_dir, mp3_bitrate, mp3_dir)
+            transcode(os.path.abspath(args.flac_dir), transcode_dir, bitrate)
         except IsADirectoryError as error:
             LOGGER.error(error)
             sys.exit(1)
 
         try:
-            check_formatting(mp3_dir)
+            check_formatting(transcode_dir)
         except FormattingError as error:
-            remove_tree(mp3_dir)
+            remove_tree(transcode_dir)
             LOGGER.error(error)
             sys.exit(1)
 
         torrent_file_name = os.path.join(
-            config.get('torrent', 'torrent_file_dir'),
-            os.path.basename(mp3_dir)) + '.torrent'
+            config.get('main', 'torrent_file_dir'),
+            os.path.basename(transcode_dir)) + '.torrent'
 
         try:
-            make_torrent(mp3_dir, torrent_file_name,
+            make_torrent(transcode_dir, torrent_file_name,
                          config.get('redacted', 'announce_id'))
         except FileExistsError as error:
             LOGGER.error(error)
@@ -79,9 +89,11 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=__doc__)
 
-    parser.add_argument('mp3_bitrate', choices=['V0', '320'], nargs='+',
-                        help='MP3 type to transcode to (default: MP3 320)')
-    parser.add_argument('flac_dir', help='Path to flac folder')
+    parser.add_argument('bitrates', choices=['v0', '320'], nargs='+',
+                        help='MP3 bitrate to transcode to.')
+    parser.add_argument('flac_dir',
+                        help='Path to flac directory containing files to be '
+                        'transcoded')
 
     return parser.parse_args()
 
@@ -90,27 +102,28 @@ def check_config(config: ConfigParser):
     """Checks the configuration file for valid entries."""
     LOGGER.debug('Checking config file')
 
-    output_dir = config.get('transcode', 'output_dir')
-    if not os.path.exists(output_dir):
+    transcode_parent_dir = config.get('main', 'transcode_parent_dir')
+    if not os.path.exists(transcode_parent_dir):
         raise NotADirectoryError(
-            f'The provided output directory {output_dir} does not exist')
+            f'The provided output directory {transcode_parent_dir} '
+            f'does not exist')
 
-    torrent_file_dir = config.get('torrent', 'torrent_file_dir')
+    torrent_file_dir = config.get('main', 'torrent_file_dir')
     if not os.path.exists(torrent_file_dir):
         raise NotADirectoryError(
             f'The provided torrent file directory {torrent_file_dir} '
             f'does not exist')
 
 
-def create_pathname(flac_dir: str, mp3_bitrate: str, parent_dir: str) -> str:
-    """Creates a pathname with a album-formatted basename and given parent dir.
+def create_album_path(flac_dir: str, bitrate: str, parent_dir: str) -> str:
+    """Creates a pathname with an album-formatted basename and given parent dir.
 
     Uses embedded metadata to name the basename directory as such:
-    'AlbumArtist - Album (Year) [MP3 mp3_bitrate]'
+    'AlbumArtist - Album (Year) [Bitrate]'
 
     Args:
         flac_dir: Directory containing a flac to grab metadata tags from.
-        mp3_bitrate: Mp3 bitrate (used in directory name formatting)
+        bitrate: Bitrate used in directory naming.
         parent_dir: Parent directory to be combined with the created basename.
 
     Returns:
@@ -119,28 +132,36 @@ def create_pathname(flac_dir: str, mp3_bitrate: str, parent_dir: str) -> str:
     Raises:
         FileNotFoundError: A flac file wasn't found in the given flac_dir.
     """
-    LOGGER.debug('Generating the output directory name')
+    LOGGER.debug('Generating the output album path')
 
     for root, __, files in os.walk(flac_dir):
         for file in files:
             if file.endswith('.flac'):
-                tags = TinyTag.get(os.path.join(root, file))
+                tags = FLAC(os.path.join(root, file))
+                LOGGER.debug('Tags used for the album path: %s', tags)
 
                 # default to using albumartist over artist unless it's empty
-                if tags.albumartist is None:
-                    albumartist = tags.artist
+                if not tags['albumartist']:
+                    albumartist = tags['artist'][0]
                 else:
-                    albumartist = tags.albumartist
+                    albumartist = tags['albumartist'][0]
 
-                basename = (f'{albumartist} - {tags.album} ({tags.year})'
-                            f' [MP3 {mp3_bitrate}]')
-                LOGGER.debug('Generated output directory name: %s', basename)
+                # date should be the standard here but check year if empty
+                if not tags['date']:
+                    year = tags['year'][0]
+                else:
+                    year = tags['date'][0]
+
+                basename = (f'{albumartist} - {tags["album"][0]} '
+                            f'({year}) [{bitrate}]')
+                LOGGER.debug('Generated album path: %s', basename)
+
                 return os.path.join(parent_dir, basename)
 
     raise FileNotFoundError(f'No flac files were found in {flac_dir}')
 
 
-def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
+def transcode(flac_dir: str, transcode_dir: str, bitrate: str):
     """Transcode flac dir to mp3.
 
     Transcodes a given directory of flac files to specified mp3 bitrate and
@@ -150,26 +171,27 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
 
     Args:
         flac_dir: Path to directory containing flac files to be converted.
-        mp3_bitrate: Mp3 bitrate to transcode to.
-            Supported: V0, 320
-        mp3_dir: Where to store the new mp3 files.
+        transcode_dir: Where to store transcoded files.
+        bitrate: Bitrate to transcode to.
+            See bitrate_arg_map for possible values.
 
     Raises:
-        IsADirectoryError: If mp3_dir already exists.
+        IsADirectoryError: If transcode_dir already exists.
     """
-    LOGGER.info('Transcoding "%s" to MP3 %s', flac_dir, mp3_bitrate)
+    LOGGER.info('Transcoding "%s" to "%s"', flac_dir, bitrate)
 
-    if os.path.exists(mp3_dir):
+    if os.path.exists(transcode_dir):
         raise IsADirectoryError(
-            f'Output directory "{mp3_dir}" already exists.')
+            f'Output directory "{transcode_dir}" already exists.')
 
-    copy_tree(flac_dir, mp3_dir)  # copy everything over
+    copy_tree(flac_dir, transcode_dir)  # copy everything over
 
-    transcode_opts = '-aq 0' if mp3_bitrate == 'V0' else '-ab 320k'
+    transcode_opts = '-q:a 0' if bitrate == 'MP3 V0' else '-ab 320k'
+    transcode_opts += ' -codec:a libmp3lame'
 
     # transcode all flac files
     processes = []
-    for root, _, files in os.walk(mp3_dir):
+    for root, _, files in os.walk(transcode_dir):
         for file in files:
             if file.endswith('.flac'):
                 flac_file = os.path.join(root, file)
@@ -190,48 +212,43 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
         process.wait()
 
     # remove flac files from new mp3 directory
-    for root, _, files in os.walk(mp3_dir):
+    for root, _, files in os.walk(transcode_dir):
         for file in files:
             if file.endswith('.flac'):
                 os.remove(os.path.join(root, file))
 
 
-def check_formatting(mp3_dir: str):
+def check_formatting(transcode_dir: str):
     """Check formatting of transcoded mp3s before uploading
 
     Makes sure the transcoded mp3s have the required tags and formatting
     required by redacted (https://redacted.ch/rules.php?p=upload#h2.3)
 
     Args:
-        mp3_dir: Directory of transcoded mp3s to check
+        transcode_dir: Directory of transcoded mp3s to check
 
     Raises:
         FormattingError: If formatting rule not followed.
     """
-    for root, _, files in os.walk(mp3_dir):
+    # redacted required tags for any upload
+    req_tags = {'artist', 'album', 'title', 'tracknumber'}
+
+    for root, _, files in os.walk(transcode_dir):
         for file in files:
             # check path length (<= 180)
             path = os.path.join(root, file).replace(
-                os.path.dirname(mp3_dir), '')
+                os.path.dirname(transcode_dir), '')
             if len(path) > 180:
                 raise FormattingError(
                     f'The path "{path}" exceeds the 180 character limit')
 
-            # check required tags (artist, album, title, track #) are found
+            # check required tags are found
             if file.endswith('.mp3'):
-                tags = TinyTag.get(os.path.join(root, file))
-                if tags.artist is None:
-                    raise FormattingError(
-                        f'The file "{file}" has no artist tag')
-                if tags.album is None:
-                    raise FormattingError(
-                        f'The file "{file}" has no album tag')
-                if tags.title is None:
-                    raise FormattingError(
-                        f'The file "{file}" has no title tag')
-                if tags.track is None:
-                    raise FormattingError(
-                        f'The file "{file}" has no track number tag')
+                tags = MP3(os.path.join(root, file))
+                for req_tag in req_tags:
+                    if not tags[req_tag]:
+                        raise FormattingError(
+                            f'"{file}" is missing the required tag: {req_tag}')
 
 
 def make_torrent(input_dir: str, torrent_file_name: str, announce_id: str):
