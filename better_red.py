@@ -157,6 +157,8 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
     Raises:
         IsADirectoryError: If mp3_dir already exists.
     """
+    LOGGER.info('Transcoding "%s" to MP3 %s', flac_dir, mp3_bitrate)
+
     if os.path.exists(mp3_dir):
         raise IsADirectoryError(
             f'Output directory "{mp3_dir}" already exists.')
@@ -166,7 +168,6 @@ def transcode(flac_dir: str, mp3_bitrate: str, mp3_dir: str):
     transcode_opts = '-aq 0' if mp3_bitrate == 'V0' else '-ab 320k'
 
     # transcode all flac files
-    LOGGER.info('Transcoding "%s"', flac_dir)
     processes = []
     for root, _, files in os.walk(mp3_dir):
         for file in files:
