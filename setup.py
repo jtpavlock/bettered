@@ -5,7 +5,7 @@ from distutils.core import setup
 
 setup(
     name='betterRED',
-    version='0.1',
+    version='0.1.2',
     description='Automatic helper for redacted better.php',
     url='https://github.com/jtpavlock/betterRED',
     packages=[],
