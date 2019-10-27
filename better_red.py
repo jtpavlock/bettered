@@ -30,6 +30,10 @@ class FormattingError(Exception):
     """Used for checking mp3 formatting prior to uploading"""
 
 
+class TranscodeError(Exception):
+    """Used if any errors occcured while transcoding"""
+
+
 def main():
     """Run that shit."""
     logging.basicConfig(level=logging.INFO)
@@ -141,15 +145,15 @@ def create_album_path(flac_dir: str, bitrate: str, parent_dir: str) -> str:
                 LOGGER.debug('Tags used for the album path: %s', tags)
 
                 # default to using albumartist over artist unless it's empty
-                if not tags['albumartist']:
+                if not tags.get('albumartist'):
                     albumartist = tags['artist'][0]
                 else:
                     albumartist = tags['albumartist'][0]
 
                 # date should be the standard here but check year if empty
-                if not tags['date']:
-                    year = tags['year'][0]
-                else:
+                if tags.get('date'):
+                    year = tags['date'][0]
+                elif tags.get('year'):
                     year = tags['date'][0]
 
                 basename = (f'{albumartist} - {tags["album"][0]} '
@@ -176,9 +180,15 @@ def transcode(flac_dir: str, transcode_dir: str, bitrate: str):
             See bitrate_arg_map for possible values.
 
     Raises:
-        IsADirectoryError: If transcode_dir already exists.
+        IsADirectoryError: transcode_dir already exists.
+        TranscodeError: Error when transcoding.
     """
     LOGGER.info('Transcoding "%s" to "%s"', flac_dir, bitrate)
+
+    encoding_opts = {
+        'MP3 320': '-q 0 -b 320 --noreplaygain --add-id3v2',
+        'MP3 V0':  '-q 0 -V 0 --vbr-new --noreplaygain --add-id3v2'
+    }
 
     if os.path.exists(transcode_dir):
         raise IsADirectoryError(
@@ -186,30 +196,36 @@ def transcode(flac_dir: str, transcode_dir: str, bitrate: str):
 
     copy_tree(flac_dir, transcode_dir)  # copy everything over
 
-    transcode_opts = '-q:a 0' if bitrate == 'MP3 V0' else '-ab 320k'
-    transcode_opts += ' -codec:a libmp3lame'
-
     # transcode all flac files
     processes = []
     for root, _, files in os.walk(transcode_dir):
         for file in files:
             if file.endswith('.flac'):
                 flac_file = os.path.join(root, file)
-                mp3_file = flac_file.replace('.flac', '.mp3')
+                transcode_file = flac_file.replace('.flac', '.mp3')
+                tags = FLAC(flac_file)
 
-                # use ffmpeg to transcode
-                transcode_cmd = (f'ffmpeg -loglevel error -i "{flac_file}" '
-                                 f'{transcode_opts} "{mp3_file}"')
+                transcode_cmd = (f'lame {encoding_opts[bitrate]} '
+                                 f'--tt "{get_tag("title", tags)}" '
+                                 f'--tl "{get_tag("album", tags)}" '
+                                 f'--ta "{get_tag("artist", tags)}" '
+                                 f'--tn "{get_tag("track", tags)}" '
+                                 f'--tg "{get_tag("genre", tags)}" '
+                                 f'--ty "{get_tag("date", tags)}" '
+                                 f'--tc "{get_tag("comment", tags)}" '
+                                 f'"{flac_file}" "{transcode_file}"')
 
                 # run transocding commands in parallel
-                # stdin redirect required to reset terminal
                 processes.append(
                     subprocess.Popen(shlex.split(transcode_cmd),
-                                     stdin=open(os.devnull)))
+                                     stderr=subprocess.PIPE))
 
     # wait for transcodes to finish
     for process in processes:
-        process.wait()
+        err = process.communicate()[1]
+        if process.returncode:
+            # one of our transcoding processes failed - raise with stderr msg
+            raise TranscodeError(err)
 
     # remove flac files from new mp3 directory
     for root, _, files in os.walk(transcode_dir):
@@ -231,7 +247,7 @@ def check_formatting(transcode_dir: str):
         FormattingError: If formatting rule not followed.
     """
     # redacted required tags for any upload
-    req_tags = {'artist', 'album', 'title', 'tracknumber'}
+    req_tags = ['artist', 'album', 'title', 'tracknumber']
 
     for root, _, files in os.walk(transcode_dir):
         for file in files:
@@ -246,7 +262,7 @@ def check_formatting(transcode_dir: str):
             if file.endswith('.mp3'):
                 tags = MP3(os.path.join(root, file))
                 for req_tag in req_tags:
-                    if not tags[req_tag]:
+                    if req_tag not in tags.keys():
                         raise FormattingError(
                             f'"{file}" is missing the required tag: {req_tag}')
 
@@ -275,6 +291,19 @@ def make_torrent(input_dir: str, torrent_file_name: str, announce_id: str):
 
     subprocess.run(shlex.split(torrent_cmd), check=True,
                    stdout=open(os.devnull))
+
+
+def get_tag(tag_key: str, tags: dict) -> str:
+    """Wrapper for mutagen tag retrieval.
+
+    Args:
+        tag_key: Tag we want to return.
+        tags: Mutagen "dictionary" tags.
+
+    Returns:
+        Corresponding tag value to tag_key.
+    """
+    return tags[tag_key][0] if tags.get(tag_key) else ''
 
 
 if __name__ == "__main__":
