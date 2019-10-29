@@ -13,7 +13,7 @@ Example:
 
 import argparse
 from configparser import ConfigParser
-from distutils.dir_util import copy_tree, remove_tree
+from distutils.dir_util import copy_tree
 import logging
 import os
 import re
@@ -24,7 +24,7 @@ import sys
 from mutagen.mp3 import EasyMP3 as MP3
 from mutagen.flac import FLAC
 
-from config import read_config
+from better_red import config as Config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
 
     args = parse_args()
-    config = read_config()
+    config = Config.read_config()
 
     bitrate_arg_map = {'v0': 'MP3 V0', '320': 'MP3 320'}
 
@@ -66,8 +66,6 @@ def parse_args():
         description=__doc__)
 
     return parser.parse_args()
-
-
 
 
 def check_config(config: ConfigParser):
