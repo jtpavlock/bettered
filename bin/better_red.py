@@ -24,70 +24,37 @@ import sys
 from mutagen.mp3 import EasyMP3 as MP3
 from mutagen.flac import FLAC
 
+from config import read_config
+
 LOGGER = logging.getLogger(__name__)
-
-
-class FormattingError(Exception):
-    """Used for checking mp3 formatting prior to uploading"""
-
-
-class TranscodeError(Exception):
-    """Used if any errors occcured while transcoding"""
 
 
 def main():
     """Run that shit."""
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
 
     args = parse_args()
-    config = ConfigParser()
-    config.read(os.path.expanduser('~/.config/betterRED/config.ini'))
-
-    try:
-        check_config(config)
-    except NotADirectoryError as error:
-        LOGGER.error(error)
-        sys.exit(1)
+    config = read_config()
 
     bitrate_arg_map = {'v0': 'MP3 V0', '320': 'MP3 320'}
 
     for bitrate_arg in args.bitrates:
         bitrate = bitrate_arg_map[bitrate_arg]
-        try:
-            transcode_parent_dir = config.get('main', 'transcode_parent_dir')
-            transcode_dir = create_album_path(args.flac_dir, bitrate,
-                                              transcode_parent_dir)
-        except FileNotFoundError as error:
-            LOGGER.error(error)
-            sys.exit(1)
 
-        try:
-            transcode(os.path.abspath(args.flac_dir), transcode_dir, bitrate)
-        except IsADirectoryError as error:
-            LOGGER.error(error)
-            sys.exit(1)
-        except TranscodeError as error:
-            remove_tree(transcode_dir)
-            LOGGER.error(error)
-            sys.exit(1)
+        transcode_parent_dir = config.get('main', 'transcode_parent_dir')
+        transcode_dir = create_album_path(args.flac_dir, bitrate,
+                                          transcode_parent_dir)
 
-        try:
-            check_formatting(transcode_dir)
-        except FormattingError as error:
-            remove_tree(transcode_dir)
-            LOGGER.error(error)
-            sys.exit(1)
+        transcode(os.path.abspath(args.flac_dir), transcode_dir, bitrate)
+
+        check_formatting(transcode_dir)
 
         torrent_file_name = os.path.join(
             config.get('main', 'torrent_file_dir'),
             os.path.basename(transcode_dir)) + '.torrent'
 
-        try:
-            make_torrent(transcode_dir, torrent_file_name,
-                         config.get('redacted', 'announce_id'))
-        except FileExistsError as error:
-            LOGGER.error(error)
-            sys.exit(1)
+        make_torrent(transcode_dir, torrent_file_name,
+                     config.get('redacted', 'announce_id'))
 
 
 def parse_args():
@@ -98,30 +65,45 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=__doc__)
 
-    parser.add_argument('bitrates', choices=['v0', '320'], nargs='+',
-                        help='MP3 bitrate to transcode to.')
-    parser.add_argument('flac_dir',
-                        help='Path to flac directory containing files to be '
-                        'transcoded')
-
     return parser.parse_args()
+
+
 
 
 def check_config(config: ConfigParser):
     """Checks the configuration file for valid entries."""
     LOGGER.debug('Checking config file')
 
+    if not config.get('main', 'transcode_parent_dir'):
+        raise ValueError('No transcode parent directory given')
+    if not config.get('main', 'torrent_file_dir'):
+        raise ValueError('No transcode file directory given')
+    if not config.get('main', 'transcode_parent_dir'):
+        raise ValueError('No music directory given')
+
     transcode_parent_dir = config.get('main', 'transcode_parent_dir')
-    if not os.path.exists(transcode_parent_dir):
-        raise NotADirectoryError(
-            f'The provided output directory {transcode_parent_dir} '
+    if not os.path.exists(config.get('main', 'transcode_parent_dir')):
+        raise ValueError(
+            f'The provided transcode parent directory {transcode_parent_dir} '
             f'does not exist')
 
     torrent_file_dir = config.get('main', 'torrent_file_dir')
     if not os.path.exists(torrent_file_dir):
-        raise NotADirectoryError(
+        raise ValueError(
             f'The provided torrent file directory {torrent_file_dir} '
             f'does not exist')
+
+    music_dir = config.get('main', 'music_dir')
+    if not os.path.exists(torrent_file_dir):
+        raise ValueError(
+            f'The provided music directory {music_dir} does not exist')
+
+    if not config.get('redacted', 'username'):
+        raise ValueError('No redacted username given')
+    if not config.get('redacted', 'password'):
+        raise ValueError('No redacted password given')
+    if not config.get('redacted', 'announce_id'):
+        raise ValueError('No redacted announce_id given')
 
 
 def create_album_path(flac_dir: str, bitrate: str, parent_dir: str) -> str:
