@@ -12,8 +12,7 @@ Example:
 """
 
 import argparse
-from configparser import ConfigParser
-from distutils.dir_util import copy_tree, remove_tree
+from distutils.dir_util import copy_tree
 import logging
 import os
 import re
@@ -24,7 +23,7 @@ import sys
 from mutagen.mp3 import EasyMP3 as MP3
 from mutagen.flac import FLAC
 
-from config import read_config
+from bettered.config import read_config
 
 LOGGER = logging.getLogger(__name__)
 
@@ -66,44 +65,6 @@ def parse_args():
         description=__doc__)
 
     return parser.parse_args()
-
-
-
-
-def check_config(config: ConfigParser):
-    """Checks the configuration file for valid entries."""
-    LOGGER.debug('Checking config file')
-
-    if not config.get('main', 'transcode_parent_dir'):
-        raise ValueError('No transcode parent directory given')
-    if not config.get('main', 'torrent_file_dir'):
-        raise ValueError('No transcode file directory given')
-    if not config.get('main', 'transcode_parent_dir'):
-        raise ValueError('No music directory given')
-
-    transcode_parent_dir = config.get('main', 'transcode_parent_dir')
-    if not os.path.exists(config.get('main', 'transcode_parent_dir')):
-        raise ValueError(
-            f'The provided transcode parent directory {transcode_parent_dir} '
-            f'does not exist')
-
-    torrent_file_dir = config.get('main', 'torrent_file_dir')
-    if not os.path.exists(torrent_file_dir):
-        raise ValueError(
-            f'The provided torrent file directory {torrent_file_dir} '
-            f'does not exist')
-
-    music_dir = config.get('main', 'music_dir')
-    if not os.path.exists(torrent_file_dir):
-        raise ValueError(
-            f'The provided music directory {music_dir} does not exist')
-
-    if not config.get('redacted', 'username'):
-        raise ValueError('No redacted username given')
-    if not config.get('redacted', 'password'):
-        raise ValueError('No redacted password given')
-    if not config.get('redacted', 'announce_id'):
-        raise ValueError('No redacted announce_id given')
 
 
 def create_album_path(flac_dir: str, bitrate: str, parent_dir: str) -> str:

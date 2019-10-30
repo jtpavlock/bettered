@@ -1,4 +1,4 @@
-# BetterRED
+# BetteRED
 
 ## Introduction
 BetterRED autmoatically transcodes a given path of flac files to mp3 files
