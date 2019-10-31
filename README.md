@@ -53,16 +53,17 @@ Edit the configuration file.
 
 ## Development:
 
-### 1. Fork the repository and create a feature/bug fix branch
+#### 1. Fork the repository and create a feature/bug fix branch
 
-### 2. Install development requirements
+#### 2. Install development requirements
 `$ pip install -e . ".[dev]"`
 
-### 3. Hack away
-### 4. Create some tests
+#### 3. Hack away
+#### 4. Create some tests
 
-### 5. Make sure it's good code
-`$ pytest`
+#### 5. Make sure it's good code
+`$ pytest --cov bettered test/`
+
 `$ pylint`
 
-### 6. Submit a pull request
+#### 6. Submit a pull request
