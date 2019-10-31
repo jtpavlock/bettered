@@ -49,3 +49,20 @@ Edit the configuration file.
   * Automatic recognition of flac folders that can be modified to mp3s and uploaded
   * Automatic uploading to redacted
   * 2FA support
+
+
+## Development:
+
+### 1. Fork the repository and create a feature/bug fix branch
+
+### 2. Install development requirements
+`$ pip install -e . ".[dev]"`
+
+### 3. Hack away
+### 4. Create some tests
+
+### 5. Make sure it's good code
+`$ pytest`
+`$ pylint`
+
+### 6. Submit a pull request

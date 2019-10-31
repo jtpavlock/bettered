@@ -2,12 +2,12 @@
 
 """Script to transcode flac to mp3 and create a torrent file.
 
-BetterRED autmoatically transcodes a given path of flac files to mp3 files
+BetteRED autmoatically transcodes a given path of flac files to mp3 files
 based on desired quality (MP3 V0 or MP3 320). It will then create a
 corresponding torrent file to be uploaded to redacted.
 
 Example:
-    $ betterRED v0 320 "Abbey Road [FLAC]/"
+    $ bettered v0 320 "Abbey Road [FLAC]/"
 
 """
 
@@ -27,10 +27,15 @@ LOGGER = logging.getLogger(__name__)
 
 def main():
     """Run that shit."""
-    logging.basicConfig(level=logging.DEBUG)
-
     args = parse_args()
-    config = read_config()
+
+    logger_arg_map = {
+        'none': logging.CRITICAL + 1, 'debug': logging.DEBUG,
+        'info': logging.INFO, 'warn': logging.WARN,
+        'error': logging.ERROR, 'critical': logging.CRITICAL
+    }
+    logging.basicConfig(level=logger_arg_map[args.log_level])
+    config = read_config([args.config])
 
     bitrate_arg_map = {'v0': 'MP3 V0', '320': 'MP3 320'}
 
@@ -63,6 +68,11 @@ def parse_args():
     parser.add_argument('flac_dir',
                         help='Path to flac directory containing files to be '
                         'transcoded')
+    parser.add_argument('-c', '--config', help='Configuration file location')
+    parser.add_argument('-l', '--log_level', default='info',
+                        choices=['none', 'debug', 'info', 'warn', 'error',
+                                 'critical'],
+                        help='Logging level to output. Default is "info".\n')
 
     return parser.parse_args()
 
