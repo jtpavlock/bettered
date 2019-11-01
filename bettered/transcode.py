@@ -81,7 +81,10 @@ def transcode(flac_dir: str, transcode_parent_dir: str, bitrate: str) -> str:
     # remove flac files from new mp3 directory
     for root, _, files in os.walk(transcode_dir):
         for file in files:
-            if file.endswith('.flac'):
+            if (file.endswith('.flac')
+                    or file.endswith('.cue')
+                    or file.endswith('.log')
+                    or file.endswith('.m3u')):
                 os.remove(os.path.join(root, file))
 
     _check_formatting(transcode_dir)
