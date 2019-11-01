@@ -35,7 +35,7 @@ def main():
         'error': logging.ERROR, 'critical': logging.CRITICAL
     }
     logging.basicConfig(level=logger_arg_map[args.log_level])
-    config = read_config([args.config])
+    config = read_config(args.config)
 
     bitrate_arg_map = {'v0': 'MP3 V0', '320': 'MP3 320'}
 
