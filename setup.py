@@ -3,12 +3,30 @@
 
 from distutils.core import setup
 
+with open('README.md', 'r') as readme:
+    LONG_DESCRIPTION = readme.read()
+
 setup(
-    name='betterRED',
+    name='bettered',
     version='0.1.2',
     description='Automatic helper for redacted better.php',
+    long_description=LONG_DESCRIPTION,
     url='https://github.com/jtpavlock/betterRED',
-    packages=[],
+    packages=[
+        'bettered',
+    ],
+    entry_points={
+        'console_scripts': [
+            'bettered = bettered:main',
+            ],
+        },
     install_requires=['mutagen'],
+    extras_require={
+        'dev': [
+            'pytest',
+            'pytest-cov',
+            'pylint',
+            ]
+        },
     python_requires='>=3.6',
     )
