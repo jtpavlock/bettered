@@ -78,7 +78,7 @@ def transcode(flac_dir: str, transcode_parent_dir: str, bitrate: str) -> str:
             # one of our transcoding processes failed - raise with stderr msg
             raise ChildProcessError(err)
 
-    # remove flac files from new mp3 directory
+    # remove flac, cue, log, and m3u files from new mp3 directory
     for root, _, files in os.walk(transcode_dir):
         for file in files:
             if (file.endswith('.flac')
