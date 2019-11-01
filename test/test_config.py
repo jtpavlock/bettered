@@ -2,7 +2,6 @@
 
 from configparser import ConfigParser
 from unittest import mock
-import re
 import pytest
 
 from bettered import config as Config
@@ -45,38 +44,28 @@ class TestCheckConfig():
     """Test config.check_config()"""
 
     @staticmethod
-    @pytest.fixture(name='gen_config', scope='class')
+    @pytest.fixture(name='gen_config')
     def fixture_gen_config(tmp_path_factory):
-        """Generate and return a valid config string."""
-        test_config = """
-        [main]
-        transcode_parent_dir = /transcode_parent_test_dir
-        torrent_file_dir = /torrent_file_test_dir
-
-        [redacted]
-        announce_id = 1234
-        """
-
-        # create temporary directories
+        """Generate and return a valid ConfigParser config."""
         tmp_transcode_parent_dir = tmp_path_factory.mktemp(
             'transcode_parent_test_dir')
         tmp_torrent_file_dir = tmp_path_factory.mktemp(
             'torrent_file_test_dir')
 
-        test_config = re.sub('/transcode_parent_test_dir',
-                             str(tmp_transcode_parent_dir), test_config)
-        test_config = re.sub('/torrent_file_test_dir',
-                             str(tmp_torrent_file_dir), test_config)
+        config = ConfigParser()
+        config['main'] = {}
+        config['main']['transcode_parent_dir'] = str(tmp_transcode_parent_dir)
+        config['main']['torrent_file_dir'] = str(tmp_torrent_file_dir)
+        config['redacted'] = {}
+        config['redacted']['announce_id'] = '12345'
 
-        return test_config
+        return config
 
     @staticmethod
     def test_main_section_exists(gen_config):
         """Test KeyError if no [main] section in config."""
-        tmp_config = re.sub(r'\[main\]', '[not-main]', gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        config = gen_config
+        config.remove_section('main')
 
         with pytest.raises(KeyError):
             Config.check_config(config)
@@ -84,114 +73,76 @@ class TestCheckConfig():
     @staticmethod
     def test_transcode_parent_dir_option_exists(gen_config):
         """Test KeyError if no transcode_parent_dir option in config."""
-        tmp_config = re.sub(r'transcode_parent_dir ', '#transcode_parent_dir ',
-                            gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        gen_config.remove_option('main', 'transcode_parent_dir')
 
         with pytest.raises(KeyError):
-            Config.check_config(config)
+            Config.check_config(gen_config)
 
     @staticmethod
     def test_torrent_file_dir_option_exists(gen_config):
         """Test KeyError if no torrent_file_dir option in config."""
-        tmp_config = re.sub(r'torrent_file_dir ', '#torrent_file_dir ',
-                            gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        gen_config.remove_option('main', 'torrent_file_dir')
 
         with pytest.raises(KeyError):
-            Config.check_config(config)
+            Config.check_config(gen_config)
 
     @staticmethod
     def test_transcode_parent_dir_value_given(gen_config):
         """Test ValueError if no transcode_parent_dir value given."""
-        tmp_config = re.sub(r'=.*/transcode_parent_test_dir.*', '= ',
-                            gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        gen_config.set('main', 'transcode_parent_dir', '')
 
         with pytest.raises(ValueError):
-            Config.check_config(config)
+            Config.check_config(gen_config)
 
     @staticmethod
     def test_torrent_file_dir_value_given(gen_config):
         """Test ValueError if no torrent_file_dir value given."""
-        tmp_config = re.sub(r'=.*/torrent_file_test_dir.*', '= ',
-                            gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        gen_config.set('main', 'torrent_file_dir', '')
 
         with pytest.raises(ValueError):
-            Config.check_config(config)
+            Config.check_config(gen_config)
 
     @staticmethod
     def test_valid_transcode_parent_dir(gen_config):
         """Test NotADirectoryError if transcode_parent_dir doesn't exist."""
-        tmp_config = re.sub(r'/transcode_parent_test_dir', 'bad_dir',
-                            gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        gen_config.set('main', 'transcode_parent_dir', 'bad_dir')
 
         with pytest.raises(NotADirectoryError):
-            Config.check_config(config)
+            Config.check_config(gen_config)
 
     @staticmethod
     def test_valid_torrent_file_dir(gen_config):
         """Test NotADirectoryError if torrent_file_dir doesn't exist."""
-        tmp_config = re.sub(r'/torrent_file_test_dir', 'bad_dir',
-                            gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        gen_config.set('main', 'transcode_parent_dir', 'bad_dir')
 
         with pytest.raises(NotADirectoryError):
-            Config.check_config(config)
+            Config.check_config(gen_config)
 
     @staticmethod
     def test_redacted_section_exists(gen_config):
         """Test KeyError if no [redacted] section in config."""
-        tmp_config = re.sub(r'\[redacted\]', '[not-redacted]', gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        gen_config.remove_section('redacted')
 
         with pytest.raises(KeyError):
-            Config.check_config(config)
+            Config.check_config(gen_config)
 
     @staticmethod
     def test_announce_id_option_exists(gen_config):
         """Test KeyError if no announce_id option in config."""
-        tmp_config = re.sub(r'announce_id ', '#announce_id ',
-                            gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        gen_config.remove_option('redacted', 'announce_id')
 
         with pytest.raises(KeyError):
-            Config.check_config(config)
+            Config.check_config(gen_config)
 
     @staticmethod
     def test_annouce_id_value_given(gen_config):
         """Test ValueError if no announce_id value given."""
-        tmp_config = re.sub(r'announce_id = .*', 'announce_id = ',
-                            gen_config)
-
-        config = ConfigParser()
-        config.read_string(tmp_config)
+        gen_config.set('redacted', 'announce_id', '')
 
         with pytest.raises(ValueError):
-            Config.check_config(config)
+            Config.check_config(gen_config)
 
     @staticmethod
     def test_valid_config(gen_config):
         """Make sure read_config works with a valid config."""
-        config = ConfigParser()
-        config.read_string(gen_config)
-
-        Config.check_config(config)
+        Config.check_config(gen_config)
