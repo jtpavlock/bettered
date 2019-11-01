@@ -3,7 +3,8 @@ name: Pylint
 on: [push]
 
 jobs:
-  build:
+  lint:
+    name: Pylint
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4

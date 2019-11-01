@@ -3,12 +3,14 @@ name: Pytest
 on: [push]
 
 jobs:
-  build:
-    runs-on: [ubuntu-latest, windows-latest]
+  test:
+    name: Pytest on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.6]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
     - uses: actions/checkout@v1
