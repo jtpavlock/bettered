@@ -53,7 +53,7 @@ def check_config(config: ConfigParser):
 
     Raises:
         KeyError: Missing required configuration option
-        ValueError: Invalid or no configuration value
+        ValueError: Invalid or no configuration value for an option
         NotADirectoryError: Directory given doesn't exist
     """
     LOGGER.debug('Checking config file')
