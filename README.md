@@ -28,22 +28,22 @@ $ sudo make install
 ### 3. Clone repository and install python dependencies
 
 ~~~
-$ git clone https://github.com/jtpavlock/betterRED.git
-$ cd betterRED
+$ git clone https://github.com/jtpavlock/bettered.git
+$ cd bettered
 $ pip3 install .
 ~~~
 
-### 4. Configure
+### 4. Configure (Alternative configuration file locations can be specified with the -c commandline option)
 
 ~~~
-$ mkdir -p ~/.config/betterRED
-$ cp betterRED/example_config.ini ~/.config/betterRED/config.ini
+$ mkdir -p ~/.config/bettered/
+$ cp example_config.ini ~/.config/bettered/config.ini
 ~~~
 
 Edit the configuration file.
 
 ### 5. Run
-`betterRED/better_red.py -h`
+`bettered -h`
 
 ## Roadmap
   * Automatic recognition of flac folders that can be modified to mp3s and uploaded
