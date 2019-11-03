@@ -68,6 +68,7 @@ class Album():
                 if file.endswith('.flac'):
                     flac_file = os.path.join(root, file)
                     transcode_file = flac_file.replace('.flac', '.mp3')
+                    LOGGER.debug("%s", transcode_file)
 
                     tags = mutagen.flac.FLAC(flac_file)
                     # lame expects a wav file, so wav -> flac | lame
