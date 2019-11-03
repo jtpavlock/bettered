@@ -1,7 +1,7 @@
 # BetteRED
 
 ## Introduction
-BetterRED autmoatically transcodes a given path of flac files to mp3 files
+bettered autmoatically transcodes a given path of flac files to mp3 files
 based on desired quality (MP3 V0 or MP3 320). It will then create a
 corresponding torrent file to be uploaded to redacted.
 
@@ -45,6 +45,10 @@ Edit the configuration file.
 
 ### 5. Run
 `bettered -h`
+
+If this doesn't work, make sure that ~/.local/bin is in your path, or simply run:
+
+`~/.local/bin/bettered -h`
 
 ## Roadmap
   * Automatic recognition of flac folders that can be modified to mp3s and uploaded
