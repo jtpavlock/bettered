@@ -180,7 +180,7 @@ class Album():
         Raises:
             FileNotFoundError: No music files found in self.path
             IsADirectoryError: The generated album path already exists.
-            KeyError: Tag not found in music file
+            TypeError: Tag not found in music file
         """
         LOGGER.debug('Generating the transcoded album path')
 
@@ -190,11 +190,11 @@ class Album():
                 if tags:
                     try:
                         albumartist = tags.get('albumartist')[0]
-                    except KeyError:
+                    except TypeError:
                         albumartist = tags.get('artist')[0]
                     try:
                         year = tags.get('date')[0]
-                    except KeyError:
+                    except TypeError:
                         year = tags.get('year')[0]
                     album = tags.get('album')[0]
 
