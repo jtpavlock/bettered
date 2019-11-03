@@ -8,13 +8,14 @@ corresponding torrent file to be uploaded to redacted.
 ## Dependencies:
   * `mktorrent` >= 1.1
   * `lame`
+  * `flac`
   * python >= 3.6
   * pip3
 
 ## Installation:
 
-### 1. Install python3, pip3, and lame
-`$ sudo apt install python3 python3-pip lame`
+### 1. Install python3, pip3, flac, and lame
+`$ sudo apt install python3 python3-pip lame flac`
 
 ### 2. Install `mktorrent`
 `mktorrent` must be built from source unless your package manager includes >=v1.1

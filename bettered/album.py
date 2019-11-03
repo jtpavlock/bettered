@@ -70,7 +70,10 @@ class Album():
                     transcode_file = flac_file.replace('.flac', '.mp3')
 
                     tags = mutagen.flac.FLAC(flac_file)
-
+                    # lame expects a wav file, so wav -> flac | lame
+                    flac_to_wav = subprocess.Popen(
+                        shlex.split(f'flac -cd "{flac_file}"'),
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     transcode_cmd = (f'lame {encoding_opts[bitrate]} '
                                      f'--tt "{self._get_tag("title", tags)}" '
                                      f'--tl "{self._get_tag("album", tags)}" '
@@ -82,9 +85,9 @@ class Album():
                                      f' "{flac_file}" "{transcode_file}"')
 
                     # run transocding commands in parallel
-                    processes.append(
-                        subprocess.Popen(shlex.split(transcode_cmd),
-                                         stderr=subprocess.PIPE))
+                    processes.append(subprocess.Popen(
+                        shlex.split(transcode_cmd), stdin=flac_to_wav.stdout,
+                        stderr=subprocess.PIPE))
 
         # wait for transcodes to finish
         for process in processes:
