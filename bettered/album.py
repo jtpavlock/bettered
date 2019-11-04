@@ -63,7 +63,7 @@ class Album():
         # transcode all flac files
         LOGGER.info('Transcoding "%s" to "%s"', self.path, bitrate)
         processes = []
-        for root, _, files in os.walk(self.path):
+        for root, _, files in os.walk(transcode_dir):
             for file in files:
                 if file.endswith('.flac'):
                     flac_file = os.path.join(root, file)
