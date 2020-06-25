@@ -1,7 +1,7 @@
 # BetteRED
 
 ## Introduction
-bettered autmoatically transcodes a given path of flac files to mp3 files
+bettered automatically transcodes a given path of flac files to mp3 files
 based on desired quality (MP3 V0 or MP3 320). It will then create a
 corresponding torrent file to be uploaded to redacted.
 
