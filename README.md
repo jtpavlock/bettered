@@ -51,11 +51,9 @@ If this doesn't work, make sure that ~/.local/bin is in your path, or simply run
 `~/.local/bin/bettered -h`
 
 ## Roadmap
-  * Automatic recognition of flac folders that can be modified to mp3s and uploaded
-  * Automatic uploading to redacted
-  * 2FA support
-
-
+  * Support flac24bit -> flac transcodes
+  
+*I currently have no plans to integrate any automatic workflow into redacted.
 ## Development:
 
 #### 1. Fork the repository and create a feature/bug fix branch
