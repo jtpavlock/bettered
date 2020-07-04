@@ -31,7 +31,7 @@ $ sudo make install
 ~~~
 $ git clone https://github.com/jtpavlock/bettered.git
 $ cd bettered
-$ pip3 install .
+$ python3 -m pip install .
 ~~~
 
 ### 4. Configure (Alternative configuration file locations can be specified with the -c commandline option)
