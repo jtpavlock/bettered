@@ -31,7 +31,7 @@ $ sudo make install
 ~~~
 $ git clone https://github.com/jtpavlock/bettered.git
 $ cd bettered
-$ pip3 install .
+$ python3 -m pip install .
 ~~~
 
 ### 4. Configure (Alternative configuration file locations can be specified with the -c commandline option)
@@ -59,7 +59,7 @@ If this doesn't work, make sure that ~/.local/bin is in your path, or simply run
 #### 1. Fork the repository and create a feature/bug fix branch
 
 #### 2. Install development requirements
-`$ pip install -e . ".[dev]"`
+`$ python3 -m pip install -e . ".[dev]"`
 
 #### 3. Hack away
 #### 4. Create some tests
@@ -67,6 +67,6 @@ If this doesn't work, make sure that ~/.local/bin is in your path, or simply run
 #### 5. Make sure it's good code
 `$ pytest --cov bettered test/`
 
-`$ pylint`
+`$ pylint bettered/ test/`
 
 #### 6. Submit a pull request
