@@ -8,7 +8,7 @@ with open('README.md', 'r') as readme:
 
 setup(
     name='bettered',
-    version='0.2.2',
+    version='0.2.3',
     description='Automatic helper for redacted better.php',
     long_description=LONG_DESCRIPTION,
     url='https://github.com/jtpavlock/betterRED',
