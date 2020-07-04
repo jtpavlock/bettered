@@ -59,7 +59,7 @@ If this doesn't work, make sure that ~/.local/bin is in your path, or simply run
 #### 1. Fork the repository and create a feature/bug fix branch
 
 #### 2. Install development requirements
-`$ pip install -e . ".[dev]"`
+`$ python3 -m pip install -e . ".[dev]"`
 
 #### 3. Hack away
 #### 4. Create some tests
