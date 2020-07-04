@@ -193,7 +193,7 @@ class Album():
                     except TypeError:
                         albumartist = tags.get('artist')[0]
                     try:
-                        year = tags.get('date')[0]
+                        year = tags.get('date')[0][:4]
                     except TypeError:
                         year = tags.get('year')[0]
                     album = tags.get('album')[0]
