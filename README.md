@@ -52,6 +52,7 @@ If this doesn't work, make sure that ~/.local/bin is in your path, or simply run
 
 ## Roadmap
   * Support flac24bit -> flac transcodes
+  * Add transcoding tests
   
 *I currently have no plans to integrate any automatic workflow into redacted.
 ## Development:
