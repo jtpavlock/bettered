@@ -67,6 +67,6 @@ If this doesn't work, make sure that ~/.local/bin is in your path, or simply run
 #### 5. Make sure it's good code
 `$ pytest --cov bettered test/`
 
-`$ pylint`
+`$ pylint bettered/ test/`
 
 #### 6. Submit a pull request
