@@ -63,6 +63,7 @@ class Album():
         # transcode all flac files
         LOGGER.info('Transcoding "%s" to "%s"', self.path, bitrate)
         processes = []
+        flac_to_wavs = []
         for root, _, files in os.walk(transcode_dir):
             for file in files:
                 if file.endswith('.flac'):
@@ -88,6 +89,7 @@ class Album():
                     processes.append(subprocess.Popen(
                         shlex.split(transcode_cmd), stdin=flac_to_wav.stdout,
                         stderr=subprocess.PIPE))
+                    flac_to_wavs.append(flac_to_wav)
 
         # wait for transcodes to finish
         for process in processes:
@@ -95,6 +97,8 @@ class Album():
             if process.returncode:
                 # a transcoding processes failed - raise with stderr msg
                 raise ChildProcessError(err)
+        for flac_to_wav in flac_to_wavs:
+            flac_to_wav.communicate()
 
         # remove flac, cue, log, and m3u files from new mp3 directory
         for root, _, files in os.walk(transcode_dir):
