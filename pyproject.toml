@@ -16,7 +16,7 @@ bettered = 'bettered:main'
 
 [tool.poetry.dependencies]
 python = ">=3.9, <3.12"
-moe-transcode = "^0.1.1"
+moe-transcode = "^0.1.2"
 
 [tool.poetry.group.test.dependencies]
 debugpy = "^1.4.1"
@@ -39,17 +39,6 @@ isort = "^5.10.1"
 mccabe = "^0.7.0"
 pre-commit = "^2.6.0"
 pyright = "^1.1.267"
-
-[tool.commitizen]
-name = "cz_customize"
-version = "1.5.1"
-version_files = [
-    "pyproject.toml:^version",
-]
-tag_format = "v$version"
-
-[tool.commitizen.customize]
-schema_pattern = '(build|ci|deprecate|docs|feat|fix|perf|refactor|release|style|test)(\(\w+\))?!?:\s\S.*'
 
 [tool.isort]
 profile = 'black'
