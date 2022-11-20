@@ -100,11 +100,10 @@ def make_torrent(album: Album):
     Raises:
         FileExistsError: If torrent_file already exists.
     """
-    torrent_file = (
-        Path(config.CONFIG.settings.bettered.torrent_file_path)
-        / album.path.name
-        / ".torrent"
-    )
+    torrent_path = Path(config.CONFIG.settings.bettered.torrent_file_path).expanduser()
+    torrent_path.mkdir(parents=True, exist_ok=True)
+
+    torrent_file = torrent_path / album.path.name / ".torrent"
     LOGGER.info(f'Making torrent file "{torrent_file}"')
 
     if torrent_file.exists():
