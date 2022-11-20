@@ -54,9 +54,14 @@ def main():
         bitrate = BITRATE_ARG_MAP[bitrate]
         album = Album.from_dir(Path(args.flac_dir))
 
-        config.CONFIG.settings.move.album_path += f" [{bitrate.upper()}]"
+        transcode_path = Path(
+            config.CONFIG.settings.transcode.transcode_path
+        ).expanduser()
+        out_path = transcode_path / Path(
+            f"{album.artist} - {album.title} ({album.year}) [{bitrate.upper()}]"
+        )
 
-        transcode_album = transcode(album, bitrate)
+        transcode_album = transcode(album, bitrate, out_path)
         make_torrent(transcode_album)
 
 
@@ -102,7 +107,7 @@ def make_torrent(album: Album):
     torrent_path = Path(config.CONFIG.settings.bettered.torrent_file_path).expanduser()
     torrent_path.mkdir(parents=True, exist_ok=True)
 
-    torrent_file = torrent_path / f"{album.artist} - {album.path.name}.torrent"
+    torrent_file = torrent_path / f"{album.path.name}.torrent"
     LOGGER.info(f'Making torrent file "{torrent_file}"')
 
     if torrent_file.exists():
