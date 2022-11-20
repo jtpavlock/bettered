@@ -79,7 +79,6 @@ def parse_args():
         type=os.path.abspath,
         help="Path to flac directory containing files to be " "transcoded",
     )
-    parser.add_argument("-c", "--config", help="Configuration file location")
     parser.add_argument(
         "-l",
         "--log_level",
@@ -103,7 +102,7 @@ def make_torrent(album: Album):
     torrent_path = Path(config.CONFIG.settings.bettered.torrent_file_path).expanduser()
     torrent_path.mkdir(parents=True, exist_ok=True)
 
-    torrent_file = torrent_path / album.path.name / ".torrent"
+    torrent_file = torrent_path / f"{album.artist} - {album.path.name}.torrent"
     LOGGER.info(f'Making torrent file "{torrent_file}"')
 
     if torrent_file.exists():
