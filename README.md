@@ -5,6 +5,8 @@ bettered automatically transcodes a given path of flac files to mp3 files
 based on desired quality (MP3 V0 or MP3 320). It will then create a
 corresponding torrent file to be uploaded to redacted.
 
+bettered uses [Moe](https://github.com/MoeMusic/Moe) to initialize and read the configuration, and the plugin [moe_transcode](https://github.com/MoeMusic/moe_transcode) to handle the transcoding logic.
+
 ## Installation:
 
 ### 1. Install `bettered` from PyPI
@@ -24,14 +26,24 @@ https://ffmpeg.org/download.html
 
 Run `ffmpeg -h` to ensure it's in your path.
 
-### 4. Configure (Alternative configuration file locations can be specified with the -c commandline option)
+### 4. Configure
 
-~~~
-$ mkdir -p ~/.config/bettered/
-$ cp example_config.ini ~/.config/bettered/config.ini
-~~~
+Your configuration file should exist in "~/.config/bettered/config.toml" and should look like the following:
 
-Edit the configuration file.
+``` toml
+enable_plugins = ["transcode"]
+
+[transcode]
+transcode_path = "~/transcode"
+
+[bettered]
+torrent_file_path = "~/torrents"
+redacted_announce_id = "1234abcd"
+```
+
+`transcode_path` is where the transcoded albums will be placed.
+`torrent_file_path` is where the `.torrent` files will be places
+`redacted_announce_id` can be found at https://redacted.ch/upload.php and is the 32 alphanumeric id in your "announce URL"
 
 ### 5. Run
 `bettered -h`
