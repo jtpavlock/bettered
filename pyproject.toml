@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bettered"
-version = "0.2.3"
+version = "1.0.0"
 description = "Automatic helper for redacted better.php."
 authors = ["Jacob Pavlock <jtpavlock@gmail.com>"]
 repository = "https://github.com/jtpavlock/bettered"
