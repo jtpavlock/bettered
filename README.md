@@ -10,6 +10,11 @@ bettered uses [Moe](https://github.com/MoeMusic/Moe) to initialize and read the 
 ## Installation:
 
 ### 1. Install `bettered` from PyPI
+
+I recommend using [pipx](https://pypa.github.io/pipx/) to install `bettered`.
+`$ pipx install bettered`
+
+If you don't care about having `bettered` and it's dependencies (mainly `Moe`) in an isolated environment, you can just install normally with pip as well.
 `$ pip install bettered`
 
 ### 2. Install `mktorrent`
