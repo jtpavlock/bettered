@@ -11,11 +11,9 @@ Example:
 """
 
 import argparse
-import logging
 import os
 import shlex
 import subprocess
-import sys
 from itertools import islice
 from pathlib import Path
 
@@ -23,16 +21,6 @@ from moe import config
 from moe.library import Album
 from moe_transcode import transcode
 
-LOGGER = logging.getLogger(__name__)
-
-LOG_LVL_ARG_MAP = {
-    "none": logging.CRITICAL + 1,
-    "debug": logging.DEBUG,
-    "info": logging.INFO,
-    "warn": logging.WARN,
-    "error": logging.ERROR,
-    "critical": logging.CRITICAL,
-}
 BITRATE_ARG_MAP = {
     "v0": "mp3 v0",
     "320": "mp3 320",
@@ -42,12 +30,11 @@ BITRATE_ARG_MAP = {
 def main():
     """Run that shit."""
     args = parse_args()
-    logging.basicConfig(level=LOG_LVL_ARG_MAP[args.log_level])
 
     try:
         config.Config(config_dir=Path.home() / ".config" / "bettered", init_db=False)
     except config.ConfigValidationError as err:
-        LOGGER.error("Error reading the configuration file.")
+        print("Error reading configuration file.")
         raise SystemExit(1) from err
 
     for bitrate in islice(args.bitrates, 2):  # limit to max two bitrates
@@ -61,14 +48,14 @@ def main():
             f"{album.artist} - {album.title} ({album.year}) [{bitrate.upper()}]"
         )
 
+        print(f"Transcoding album {album}")
         transcode_album = transcode(album, bitrate, out_path)
+
         make_torrent(transcode_album)
 
 
 def parse_args():
     """Parses and returns commandline arguments."""
-    LOGGER.debug("Parsing commandline arguments: %s", sys.argv)
-
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__
     )
@@ -83,13 +70,6 @@ def parse_args():
         "flac_dir",
         type=os.path.abspath,
         help="Path to flac directory containing files to be " "transcoded",
-    )
-    parser.add_argument(
-        "-l",
-        "--log_level",
-        default="info",
-        choices=LOG_LVL_ARG_MAP.keys(),
-        help='Logging level to output. Default is "info".\n',
     )
 
     return parser.parse_args()
@@ -108,7 +88,7 @@ def make_torrent(album: Album):
     torrent_path.mkdir(parents=True, exist_ok=True)
 
     torrent_file = torrent_path / f"{album.path.name}.torrent"
-    LOGGER.info(f'Making torrent file "{torrent_file}"')
+    print(f"Making torrent file {torrent_file}")
 
     if torrent_file.exists():
         raise FileExistsError(f'Torrent file "{torrent_file}" already exists.')
