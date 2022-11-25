@@ -44,11 +44,15 @@ transcode_path = "~/transcode"
 [bettered]
 torrent_file_path = "~/torrents"
 redacted_announce_id = "1234abcd"
+
+[move]
+album_path = "{album.artist} - {album.title} ({album.year})"
 ```
 
 `transcode_path` is where the transcoded albums will be placed.
 `torrent_file_path` is where the `.torrent` files will be places
 `redacted_announce_id` can be found at https://redacted.ch/upload.php and is the 32 alphanumeric id in your "announce URL"
+`album_path` is the format of the album path. This will also have the bitrate automatically appended. See the [Moe docs](https://mrmoe.readthedocs.io/en/latest/plugins/move.html#path-configuration-options) for more information on customizing this value.
 
 ### 5. Run
 `bettered -h`

@@ -19,6 +19,7 @@ from pathlib import Path
 
 from moe import config
 from moe.library import Album
+from moe.plugins.move import fmt_item_path
 from moe_transcode import transcode
 
 BITRATE_ARG_MAP = {
@@ -44,9 +45,8 @@ def main():
         transcode_path = Path(
             config.CONFIG.settings.transcode.transcode_path
         ).expanduser()
-        out_path = transcode_path / Path(
-            f"{album.artist} - {album.title} ({album.year}) [{bitrate.upper()}]"
-        )
+        out_path = fmt_item_path(album, lib_path=transcode_path)
+        out_path = Path(str(out_path) + f" [{bitrate.upper()}]")
 
         print(f"Transcoding album {album}")
         transcode_album = transcode(album, bitrate, out_path)
