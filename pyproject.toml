@@ -16,7 +16,7 @@ bettered = 'bettered:main'
 
 [tool.poetry.dependencies]
 python = ">=3.9, <3.12"
-moe-transcode = "^1.0.1"
+moe-transcode = "^1.1.0"
 
 [tool.poetry.group.test.dependencies]
 debugpy = "^1.4.1"
