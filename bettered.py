@@ -48,7 +48,7 @@ def main():
         out_path = fmt_item_path(album, lib_path=transcode_path)
         out_path = Path(str(out_path) + f" [{bitrate.upper()}]")
 
-        print(f"Transcoding album {album}")
+        print(f"Transcoding '{album}' to '{bitrate.upper()}'")
         transcode_album = transcode(album, bitrate, out_path)
 
         make_torrent(transcode_album)
