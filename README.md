@@ -50,7 +50,7 @@ album_path = "{album.artist} - {album.title} ({album.year})"
 `transcode_path` is where the transcoded albums will be placed.
 `torrent_file_path` is where the `.torrent` files will be places
 `announce_url` your announce url for your tracker of choice.
-`album_path` is the format of the album path. This will also have the bitrate automatically appended. See the [Moe docs](https://mrmoe.readthedocs.io/en/latest/plugins/move.html#path-configuration-options) for more information on customizing this value.
+`album_path` is the format of the album path. This will also have the bitrate automatically appended. See the [Moe docs](https://mrmoe.readthedocs.io/en/latest/configuration.html#path-configuration-options) for more information on customizing this value.
 
 ### 5. Run
 `bettered -h`
