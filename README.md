@@ -1,9 +1,7 @@
 # BetteRED
 
 ## Introduction
-bettered automatically transcodes a given path of flac files to mp3 files
-based on desired quality (MP3 V0 or MP3 320). It will then create a
-corresponding torrent file to be uploaded to redacted.
+bettered automatically transcodes a given path of flac files to mp3 files based on desired quality (MP3 V0 or MP3 320) and creates a corresponding torrent file with a specified announce url.
 
 bettered uses [Moe](https://github.com/MoeMusic/Moe) to initialize and read the configuration, and the plugin [moe_transcode](https://github.com/MoeMusic/moe_transcode) to handle the transcoding logic.
 
@@ -43,7 +41,7 @@ transcode_path = "~/transcode"
 
 [bettered]
 torrent_file_path = "~/torrents"
-redacted_announce_id = "1234abcd"
+announce_url = "https://flacsfor.me/213/announce"
 
 [move]
 album_path = "{album.artist} - {album.title} ({album.year})"
@@ -51,7 +49,7 @@ album_path = "{album.artist} - {album.title} ({album.year})"
 
 `transcode_path` is where the transcoded albums will be placed.
 `torrent_file_path` is where the `.torrent` files will be places
-`redacted_announce_id` can be found at https://redacted.ch/upload.php and is the 32 alphanumeric id in your "announce URL"
+`announce_url` your announce url for your tracker of choice.
 `album_path` is the format of the album path. This will also have the bitrate automatically appended. See the [Moe docs](https://mrmoe.readthedocs.io/en/latest/plugins/move.html#path-configuration-options) for more information on customizing this value.
 
 ### 5. Run

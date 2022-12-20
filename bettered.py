@@ -93,14 +93,8 @@ def make_torrent(album: Album):
     if torrent_file.exists():
         raise FileExistsError(f'Torrent file "{torrent_file}" already exists.')
 
-    announce_url = (
-        "https://flacsfor.me/"
-        f"{config.CONFIG.settings.bettered.redacted_announce_id}"
-        "/announce"
-    )
-
     torrent_cmd = (
-        f"mktorrent -l 17 -p -s RED -a {announce_url} "
+        f"mktorrent -l 17 -p -s RED -a {config.CONFIG.settings.bettered.announce_url} "
         f'"{album.path}" -o "{torrent_file}"'
     )
 
